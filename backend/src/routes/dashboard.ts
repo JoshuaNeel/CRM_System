@@ -130,8 +130,8 @@ router.get('/pipeline', protect, async (req, res) => {
       orderBy: { updatedAt: 'desc' },
     });
 
-    const totalValue = pipeline.reduce((sum, item) => sum + (item.value || 0), 0);
-    const weightedValue = pipeline.reduce((sum, item) => {
+    const totalValue = pipeline.reduce((sum: number, item: any) => sum + (item.value || 0), 0);
+    const weightedValue = pipeline.reduce((sum: number, item: any) => {
       return sum + ((item.value || 0) * (item.probability || 0) / 100);
     }, 0);
 
