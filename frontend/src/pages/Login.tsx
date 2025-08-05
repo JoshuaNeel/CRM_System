@@ -28,6 +28,8 @@ const Login = () => {
 
     try {
       await login(email, password)
+      // Small delay to ensure authentication state is properly set
+      await new Promise(resolve => setTimeout(resolve, 100))
       navigate('/dashboard')
     } catch (err: any) {
       setError(err.message)

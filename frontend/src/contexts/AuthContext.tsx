@@ -36,12 +36,13 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [token, setToken] = useState<string | null>(localStorage.getItem('token'))
   const [loading, setLoading] = useState(true)
 
-  // Set up axios defaults
+  // Set up axios defaults and headers
   useEffect(() => {
     // Set base URL from environment variable or fallback to localhost
     const apiUrl = (import.meta.env as any).VITE_API_URL || 'http://localhost:5000'
     axios.defaults.baseURL = apiUrl
     
+    // Set authorization header immediately when token changes
     if (token) {
       axios.defaults.headers.common['Authorization'] = `Bearer ${token}`
     } else {
@@ -77,9 +78,15 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       
       const user = { id, name, email: userEmail, role: 'USER' }
       
-      setUser(user)
+      // Set token first, which will trigger the useEffect to set axios headers
       setToken(newToken)
       localStorage.setItem('token', newToken)
+      
+      // Set user after token is set
+      setUser(user)
+      
+      // Ensure axios header is set immediately
+      axios.defaults.headers.common['Authorization'] = `Bearer ${newToken}`
     } catch (error: any) {
       throw new Error(error.response?.data?.error || 'Login failed')
     }
@@ -91,9 +98,16 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       const { id, name: userName, email: userEmail, token: newToken } = response.data.data
       
       const user = { id, name: userName, email: userEmail, role: 'USER' }
-      setUser(user)
+      
+      // Set token first, which will trigger the useEffect to set axios headers
       setToken(newToken)
       localStorage.setItem('token', newToken)
+      
+      // Set user after token is set
+      setUser(user)
+      
+      // Ensure axios header is set immediately
+      axios.defaults.headers.common['Authorization'] = `Bearer ${newToken}`
     } catch (error: any) {
       throw new Error(error.response?.data?.error || 'Registration failed')
     }
