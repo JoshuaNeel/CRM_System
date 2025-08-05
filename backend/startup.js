@@ -5,6 +5,14 @@ const path = require('path');
 
 console.log('🚀 Starting CRM Backend...');
 
+// Check for required environment variables
+if (!process.env.DATABASE_URL) {
+  console.error('❌ DATABASE_URL environment variable is not set!');
+  console.log('📝 Please set the DATABASE_URL in Railway environment variables.');
+  console.log('🔗 You can find this in your PostgreSQL service "Connect" tab.');
+  process.exit(1);
+}
+
 try {
   // Step 1: Generate Prisma client
   console.log('📦 Generating Prisma client...');
