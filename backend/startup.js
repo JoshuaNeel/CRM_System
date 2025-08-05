@@ -22,12 +22,25 @@ try {
   console.log('🗄️ Setting up database schema...');
   execSync('npm run db:push', { stdio: 'inherit' });
   
-  // Step 3: Seed database
+  // Step 3: Seed database (only if not already seeded)
   console.log('🌱 Seeding database...');
   try {
-    execSync('npm run db:seed', { stdio: 'inherit' });
+    // Use a simple check to avoid re-seeding
+    const { PrismaClient } = require('@prisma/client');
+    const prisma = new PrismaClient();
+    
+    // Check if we already have users
+    const userCount = await prisma.user.count();
+    if (userCount === 0) {
+      console.log('📝 No users found, running seed script...');
+      execSync('npm run db:seed', { stdio: 'inherit' });
+    } else {
+      console.log('✅ Database already seeded, skipping...');
+    }
+    await prisma.$disconnect();
   } catch (seedError) {
     console.log('⚠️ Database seeding failed, continuing anyway...');
+    console.log('Error:', seedError.message);
   }
   
   // Step 4: Start the application
