@@ -39,7 +39,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   // Set up axios defaults
   useEffect(() => {
     // Set base URL from environment variable or fallback to localhost
-    const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000'
+    const apiUrl = (import.meta.env as any).VITE_API_URL || 'http://localhost:5000'
     axios.defaults.baseURL = apiUrl
     
     if (token) {
