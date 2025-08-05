@@ -1,0 +1,156 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String
+  name      String
+  role      Role     @default(USER)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  customers Customer[]
+  contacts  Contact[]
+  tasks     Task[]
+
+  @@map("users")
+}
+
+model Customer {
+  id          String   @id @default(cuid())
+  name        String
+  email       String?
+  phone       String?
+  company     String?
+  industry    String?
+  status      CustomerStatus @default(LEAD)
+  source      String?
+  notes       String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relationships
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  contacts    Contact[]
+  salesPipeline SalesPipeline?
+  tasks       Task[]
+
+  @@map("customers")
+}
+
+model Contact {
+  id          String   @id @default(cuid())
+  type        ContactType
+  subject     String
+  description String?
+  date        DateTime @default(now())
+  followUpDate DateTime?
+  status      ContactStatus @default(PLANNED)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relationships
+  customerId  String
+  customer    Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("contacts")
+}
+
+model SalesPipeline {
+  id          String   @id @default(cuid())
+  stage       PipelineStage
+  value       Float?
+  probability Int      @default(0)
+  expectedCloseDate DateTime?
+  notes       String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relationships
+  customerId  String   @unique
+  customer    Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+
+  @@map("sales_pipeline")
+}
+
+model Task {
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  dueDate     DateTime
+  priority    Priority @default(MEDIUM)
+  status      TaskStatus @default(PENDING)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relationships
+  customerId  String?
+  customer    Customer? @relation(fields: [customerId], references: [id], onDelete: SetNull)
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("tasks")
+}
+
+enum Role {
+  ADMIN
+  USER
+}
+
+enum CustomerStatus {
+  LEAD
+  QUALIFIED
+  PROPOSAL
+  CLOSED
+  LOST
+}
+
+enum ContactType {
+  CALL
+  EMAIL
+  MEETING
+  DEMO
+  FOLLOW_UP
+}
+
+enum ContactStatus {
+  PLANNED
+  COMPLETED
+  CANCELLED
+}
+
+enum PipelineStage {
+  LEAD
+  QUALIFIED
+  PROPOSAL
+  NEGOTIATION
+  CLOSED_WON
+  CLOSED_LOST
+}
+
+enum Priority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+enum TaskStatus {
+  PENDING
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+} 
